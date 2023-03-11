@@ -1,0 +1,248 @@
+<template>
+  <mars-dialog
+    :fullscreen="false"
+    class="choice-dialog"
+    :modal="true"
+    :modal-append-to-body="false"
+    title="选择部门"
+    v-if="visible"
+    @close="closeDialog"
+  >
+    <mars-crud
+      ref="crud"
+      :columns="listConfig.columns"
+      :search-form="listConfig.searchForm"
+      :autoSearch="false"
+      @selection-change="handleSelectChange"
+      :selectionType="selectionType"
+      pkKey="code"
+    >
+      <template slot="searchForm">
+        <el-form :inline="true" ref="queryForm" label-width="130px" class="queryForm" :model="queryForm">
+          <el-form-item label="部门编号" prop="code">
+            <el-input placeholder="请输入部门编号" v-model.trim="queryForm.code" clearable></el-input>
+          </el-form-item>
+          <el-form-item label="部门名称" prop="name">
+            <el-input placeholder="请输入部门名称" v-model.trim="queryForm.name" clearable></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button style="margin:0 5px" type="primary" icon="ibps-icon-search" @click="handleSearch">查询</el-button>
+            <el-button type="primary" icon="ibps-icon-refresh" @click="handleResetSearch">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </template>
+      <template v-slot:footer>
+        <div class="ibps-container-crud__footer">
+          <el-pagination
+            :current-page="currentPage"
+            :page-size="pageSize"
+            :total="total"
+            :pageSizes="[10, 20, 50, 100, 200]"
+            layout="prev, pager, next, jumper,sizes, ->, total"
+            :pagerCount="5"
+            @size-change="handlePaginationSizeChange"
+            @current-change="handlePaginationCurrentChange"
+          ></el-pagination>
+        </div>
+      </template>
+    </mars-crud>
+    <template slot="ms-foot">
+      <el-button type="primary" icon="ibps-icon-save" @click="saveConfim">
+        <span style="padding-left:5px;">确 定</span>
+      </el-button>
+      <el-button type="primary" @click="clearAll" icon="el-icon-delete">清空选择</el-button>
+      <el-button @click="closeDialog" icon="el-icon-circle-close">取 消</el-button>
+    </template>
+  </mars-dialog>
+</template>
+<script>
+import { queryDepartment } from '@/api/baseData'
+import _clonedeep from 'lodash.clonedeep'
+export default {
+  name: 'DepartmentChoiceDialog',
+  props: {
+    visible: {
+      type: Boolean,
+      default: false
+    },
+
+    selectionType: {
+      //单选radio 还是多选 checkbox
+      type: String,
+      default: 'checkbox'
+    },
+
+    defaultItems: {
+      // 接收初始选中值
+      type: Array,
+      default: () => []
+    }
+  },
+  data() {
+    return {
+      currentPage: 1,
+      pageSize: 20,
+      total: 0,
+      selection: [],
+      queryForm: {
+        code: '', //部门编号
+        name: '' //部门名称
+      },
+      listConfig: {
+        columns: [
+          {
+            prop: 'code',
+            label: '部门编号',
+            align: 'center',
+            minWidth: '120px'
+          },
+          {
+            prop: 'name',
+            label: '部门名称',
+            align: 'center',
+            minWidth: '120px'
+          },
+          {
+            prop: 'deptTypeCode',
+            label: '部门性质编号',
+            align: 'center',
+            minWidth: '120px'
+          },
+          {
+            prop: 'deptTypeName',
+            label: '部门性质名称',
+            align: 'center',
+            minWidth: '120px'
+          }
+        ],
+        searchForm: {
+          forms: []
+        }
+      }
+    }
+  },
+  mounted() {
+    this.getList(false)
+  },
+  methods: {
+    // 默认选中
+    giveChoiceItems() {
+      this.$nextTick(() => {
+        // 先清空选项
+        this.$refs['crud'].$refs['elTable'].clearSelection()
+        this.selection = _clonedeep(this.defaultItems)
+        if (!this.selection.length) {
+          return
+        }
+        this.toggleRowSelectionFn()
+      })
+    },
+
+    handlePaginationSizeChange(val) {
+      this.pageSize = val
+      this.getList(true)
+    },
+
+    handlePaginationCurrentChange(val) {
+      this.currentPage = val
+      this.getList(true)
+    },
+
+    getList(boolean) {
+      this.$nextTick(() => {
+        this.$refs.crud.loading = true
+        let params = {
+          search: this.queryForm,
+          requestPage: {
+            limit: this.pageSize,
+            pageNo: this.currentPage
+          }
+        }
+        queryDepartment(params)
+          .then(res => {
+            this.$refs.crud.ibpsData = res.data.dataResult || []
+            this.total = res.data.pageResult.totalCount || 0
+            this.$refs.crud.loading = false
+            !boolean && this.giveChoiceItems()
+          })
+          .catch(() => {
+            this.$refs.crud.loading = false
+          })
+      })
+    },
+
+    toggleRowSelectionFn() {
+      let selectAllIds = []
+      this.selection.forEach(row => {
+        selectAllIds.push(row.code)
+      })
+      if (this.$refs.crud.ibpsData.length) {
+        this.$refs.crud.ibpsData.forEach(f => {
+          selectAllIds.forEach(i => {
+            if (f.code === i) {
+              this.$refs['crud'].$refs['elTable'].toggleRowSelection(f, true)
+              if (this.selectionType === 'radio') {
+                // 单选
+                this.$refs['crud'].selectionRadio = f.code
+                console.log(this.$refs['crud'].selectionRadio)
+              }
+            }
+          })
+        })
+      }
+    },
+
+    handleSearch() {
+      this.currentPage = 1
+      this.getList(true)
+    },
+
+    handleResetSearch() {
+      this.$refs.queryForm.resetFields()
+      this.handleSearch()
+    },
+
+    handleSelectChange(val) {
+      this.selection = val
+    },
+
+    closeDialog() {
+      this.$emit('close')
+    },
+
+    // 确定
+    saveConfim() {
+      let selection = null
+      if (Array.isArray(this.selection)) {
+        if (this.selectionType === 'radio') {
+          selection = this.selection.length ? this.selection[0] : null
+        } else {
+          selection = this.selection
+        }
+      } else {
+        selection = this.selection
+      }
+      this.$emit('success', selection)
+      this.closeDialog()
+    },
+
+    // 清空选择
+    clearAll() {
+      this.selection = []
+      this.$nextTick(() => {
+        this.$refs.crud.toggleSelection([])
+      })
+    }
+  }
+}
+</script>
+<style lang="scss" scoped>
+.choice-dialog {
+  ::v-deep.el-dialog__body {
+    .fw-dialog-body {
+      height: 100%;
+      position: relative;
+    }
+  }
+}
+</style>

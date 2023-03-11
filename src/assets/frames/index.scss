@@ -1,0 +1,8 @@
+// import libs' styles
+// [stabilized codes]
+@import "~mars-css-lib/lib/mars-css-lib.css";   // 引入 layout.scss（不含主题样式）
+@import "~mars-css-lib/lib/assets/styles/theme/register.scss";   // 引入主题样式
+@import "~mars-ui-frame/lib/mars-ui-frame.css";      // 引入 mars-ui-frame 中包含的固定页的样式，如 /terminal, /404 等
+@import "~mars-comps-lib/lib/mars-comps-lib.css";    // 引入公共组件样式
+@import '~element-ui/lib/theme-chalk/index.css';     // 引入 element-ui 组件样式
+@import '~vxe-table/lib/style.css';  // 引入 vxe-table 样式，import if need

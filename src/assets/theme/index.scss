@@ -1,0 +1,10 @@
+// 定义本地需要的主题样式，该任务为固定内容
+// [stabilized codes]
+@import 'mars-css-lib/lib/assets/styles/tools/mixins/extends.scss';   // 引入库中方法及变量
+@import 'mars-css-lib/lib/assets/styles/tools/unit/color.scss';
+@import './register/fashion/index.scss';                              // 引入本地注册的主题样式
+@import './register/tradition/index.scss';
+@import './register/vigour/index.scss';
+@import './register/nature/index.scss';
+@import './register/graceful/index.scss';
+@import './register/classical/index.scss';
