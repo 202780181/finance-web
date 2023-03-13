@@ -9,12 +9,16 @@
 </template>
 
 <script>
+import {hiddenHeader} from '@/utils/common'
 export default {
   name: "cashiers",
   data() {
     return {
 
     }
+  },
+  mounted() {
+    hiddenHeader()
   }
 }
 </script>

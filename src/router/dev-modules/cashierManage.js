@@ -12,7 +12,7 @@ const cashierManage = [
   {
     path: '/cashiers',
     name: 'cashiers',
-    component: ()=> import('@/views/cashier/index.vue'),
+    component: ()=> import('@/views/cashiers/index.vue'),
     meta: {
       title: '批量出纳复核',
     }

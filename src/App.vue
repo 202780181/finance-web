@@ -1,19 +1,15 @@
 <template>
   <div id="app">
     <component :is="layout" :customBoolean="customBoolean">
-      <template v-slot:topMenu>
-        <!-- 用来创建顶部菜单 -->
-        <div></div>
-      </template>
       <template v-slot:contentCustom v-if="customBoolean">
-        <Dashboard />
+        <cashier/>
       </template>
     </component>
   </div>
 </template>
 <script>
 import { Layout, Layout2, childLayout } from 'mars-ui-frame'
-import Dashboard from './views/Dashboard/index.vue'
+import cashier from './views/cashier/index.vue'
 export default {
   name: 'app',
   data() {
@@ -25,7 +21,7 @@ export default {
     Layout: Layout,
     withoutAsideLayout: Layout2,
     childLayout: childLayout,
-    Dashboard
+    cashier
   },
   computed: {
     layout() {
@@ -45,7 +41,7 @@ export default {
   watch: {
     $route: {
       handler(val) {
-        if (val.path === '/dashboard') {
+        if (val.path === '/cashier') {
           this.customBoolean = true
         } else {
           this.customBoolean = false

@@ -36,14 +36,16 @@
           </el-col>
           <el-col :span="4" class="">
             <el-button class="right-20" size="small" type="primary">查询</el-button>
-            <el-button type="primary" size="small" class="left-20">下一单</el-button>
+            <el-tooltip class="item" effect="dark" content='只能调出"无纸质附件"的单据' placement="top-start">
+              <el-button type="primary" size="small" class="left-20">下一单</el-button>
+            </el-tooltip>
           </el-col>
         </el-row>
       </el-form>
       <el-row type="flex" class="ops-btn">
-        <el-button class="right-20" size="small" type="primary">批量出纳</el-button>
+        <el-button class="right-20" size="small" type="primary" @click="goCashiers">批量出纳</el-button>
         <el-button class="right-20" size="small" type="primary">附件查看</el-button>
-        <el-button class="right-20" size="small" type="primary" @click="search">查询</el-button>
+        <el-button class="right-20" size="small" type="primary" @click="complexSearch">查询</el-button>
         <el-button class="right-20" size="small" type="primary">凭证查看</el-button>
         <el-button class="right-20" size="small" type="primary">设置</el-button>
       </el-row>
@@ -95,12 +97,12 @@
             </div>
           </div>
         </div>
-        <div class="right-grid" :style="{height: pageH + 'px'}">
+        <div class="right-grid" :style="{height: pageH + 'px'}"  v-a-loading="loading">
           <div class="top-status-box">
             <div class="label left-box-s">
               <div class="left">
                 <span>状态：</span>
-                <span>{{getStripStatus()}}</span>
+                <span>{{ getStripStatus() }}</span>
               </div>
             </div>
             <div class="label left-amount-t">
@@ -115,7 +117,7 @@
                   <span class="card-title">付款信息</span>
                 </div>
                 <div class="card-extra">
-                  <el-row >
+                  <el-row>
                     <el-col :span="12">
                       <el-col :span="12">
                         <el-form-item label="付款方户名:">
@@ -134,7 +136,7 @@
                       </el-form-item>
                     </el-col>
                   </el-row>
-                  <el-row >
+                  <el-row>
                     <el-col :span="12">
                       <el-form-item label="付款方户名:">
                         <el-input v-model="form.name"></el-input>
@@ -160,7 +162,7 @@
                   <span class="card-title">出纳信息</span>
                 </div>
                 <div class="card-extra">
-                  <el-row >
+                  <el-row>
                     <el-col :span="12">
                       <el-form-item label="用途:">
                         <el-input v-model="form.name"></el-input>
@@ -185,13 +187,13 @@
                       </el-col>
                     </el-col>
                   </el-row>
-                  <el-row >
+                  <el-row>
                     <el-col :span="12">
-                     <el-col :span="12">
-                       <el-form-item label="类型:">
-                         <el-input v-model="form.name"></el-input>
-                       </el-form-item>
-                     </el-col>
+                      <el-col :span="12">
+                        <el-form-item label="类型:">
+                          <el-input v-model="form.name"></el-input>
+                        </el-form-item>
+                      </el-col>
                       <el-col :span="12">
                         <el-form-item label="结算单号:">
                           <el-input v-model="form.name"></el-input>
@@ -222,7 +224,7 @@
                   <span class="card-title">首款单位</span>
                 </div>
                 <div class="card-extra">
-                  <el-row >
+                  <el-row>
                     <el-col :span="12">
                       <el-form-item label="对方账户:">
                         <el-input v-model="form.name"></el-input>
@@ -234,7 +236,7 @@
                       </el-form-item>
                     </el-col>
                   </el-row>
-                  <el-row >
+                  <el-row>
                     <el-col :span="12">
                       <el-form-item label="银行账户:">
                         <el-input v-model="form.name"></el-input>
@@ -253,16 +255,16 @@
                   <span class="card-title">国库信息</span>
                 </div>
                 <div class="card-extra">
-                  <el-row >
+                  <el-row>
                     <el-col :span="12">
-                     <el-col :span="12">
-                       <el-form-item label="预算类型:">
-                         <el-select :value="form.budgetType">
-                           <el-option label="区域一" value="shanghai"></el-option>
-                           <el-option label="区域二" value="beijing"></el-option>
-                         </el-select>
-                       </el-form-item>
-                     </el-col>
+                      <el-col :span="12">
+                        <el-form-item label="预算类型:">
+                          <el-select :value="form.budgetType">
+                            <el-option label="区域一" value="shanghai"></el-option>
+                            <el-option label="区域二" value="beijing"></el-option>
+                          </el-select>
+                        </el-form-item>
+                      </el-col>
                       <el-col :span="12">
                         <el-form-item label="功能分类:">
                           <el-select :value="form.fClass">
@@ -278,7 +280,7 @@
                       </el-form-item>
                     </el-col>
                   </el-row>
-                  <el-row >
+                  <el-row>
                     <el-col :span="12">
                       <el-col :span="12">
                         <el-form-item label="支出类型:">
@@ -313,7 +315,7 @@
                   <span class="card-title">其他</span>
                 </div>
                 <div class="card-extra">
-                  <el-row >
+                  <el-row>
                     <el-col :span="12">
                       <el-form-item label="审批说明:">
                         <el-input v-model="form.economy"></el-input>
@@ -327,7 +329,7 @@
                       </el-col>
                       <el-col :span="9" :offset="1">
                         <el-form-item label-width="0">
-                        <el-input v-model="form.host" placeholder="请输入">接收人</el-input>
+                          <el-input v-model="form.host" placeholder="请输入">接收人</el-input>
                         </el-form-item>
                       </el-col>
                       <el-col :span="9" :offset="2">
@@ -346,6 +348,7 @@
                 <div class="card-extra">
                   <el-table
                     class="journal-table"
+                    height="300px"
                     :data="form.journalData"
                     style="width: 97%">
                     <el-table-column
@@ -392,7 +395,7 @@
                 <el-button type="primary">
                   打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
                 </el-button>
-                <el-dropdown-menu slot="dropdown">
+                <el-dropdown-menu>
                   <el-dropdown-item>打印确认单</el-dropdown-item>
                   <el-dropdown-item>打印回单</el-dropdown-item>
                 </el-dropdown-menu>
@@ -404,7 +407,7 @@
                 <el-button type="primary">
                   打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
                 </el-button>
-                <el-dropdown-menu slot="dropdown">
+                <el-dropdown-menu>
                   <el-dropdown-item>打印确认单</el-dropdown-item>
                   <el-dropdown-item>打印回单</el-dropdown-item>
                 </el-dropdown-menu>
@@ -417,7 +420,7 @@
                 <el-button type="primary">
                   打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
                 </el-button>
-                <el-dropdown-menu slot="dropdown">
+                <el-dropdown-menu>
                   <el-dropdown-item>打印确认单</el-dropdown-item>
                   <el-dropdown-item>打印回单</el-dropdown-item>
                 </el-dropdown-menu>
@@ -431,7 +434,7 @@
                 <el-button type="primary">
                   打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
                 </el-button>
-                <el-dropdown-menu slot="dropdown">
+                <el-dropdown-menu>
                   <el-dropdown-item>打印确认单</el-dropdown-item>
                   <el-dropdown-item>打印回单</el-dropdown-item>
                 </el-dropdown-menu>
@@ -441,15 +444,20 @@
         </div>
       </div>
     </div>
+    <!-- 复杂查询条件 -->
+    <complex-search :show="complexShow" @close="complexCloseAction"/>
   </div>
 </template>
 
 <script>
 import elDragDialog from "@/directive/el-dragDialog";
-
+import aLoading from '@/directive/a-loading/index';
+import complexSearch from "@/views/cashier/components/complexSearch.vue";
+import {hiddenHeader} from '@/utils/common'
 export default {
   name: "cashier",
   directives: {
+    aLoading,
     elDragDialog
   },
   data() {
@@ -457,6 +465,8 @@ export default {
       visible: false,
       pageH: 0,
       selectedIndex: -1,
+      loading: true,
+      complexShow: false,
       items: [
         {}, {}, {}, {}, {},
         {}, {}, {}, {}, {},
@@ -481,10 +491,10 @@ export default {
         // 国库信息
         budgetType: '',
         fClass: '',
-        economy: '' ,
+        economy: '',
         outlay: '',
         sfBudget: '',
-        budgetLinkedNo:'',
+        budgetLinkedNo: '',
         // 其他
         short: false,
         host: '',
@@ -509,28 +519,57 @@ export default {
       receiptType: []
     }
   },
-  mounted() {
-    this.initPageDivSize()
+  components: {
+    complexSearch
   },
-  computed:{
+  mounted() {
+    hiddenHeader()
+    this.initPageDivSize()
+    window.onresize = () => {
+      return (() => {
+        this.initPageDivSize()
+      })();
+    };
+    setTimeout(()=> {
+      this.loading = false
+    }, 5000)
+  },
+  computed: {
     isAssociate() {
       return !this.form.associate
     }
   },
   methods: {
+    // 初始页面高度
     initPageDivSize() {
-      let bodyH = this.$refs.main.offsetHeight
-      let headerH = this.$refs.headTop.offsetHeight
-      this.pageH = (bodyH - headerH) - 80
+      this.$nextTick(() => {
+        const tab = 37
+        const screenH = window.innerHeight
+        const headerH = this.$refs.headTop.offsetHeight
+        this.pageH = screenH - headerH - tab - 80
+      })
     },
+    // 左侧列表选择
     selectedAction(item, index) {
       this.selectedIndex = index
     },
+    // 获取当前选中出纳单状态
     getStripStatus() {
       return '待出纳'
     },
-    search() {
-
+    complexSearch() {
+      this.complexShow = true
+    },
+    complexCloseAction() {
+      this.complexShow = false
+    },
+    goCashiers() {
+      this.$router.push({
+        path:'/cashiers',
+        query: {
+          id: '00x112'
+        }
+      })
     }
   }
 }
@@ -579,9 +618,11 @@ export default {
 .mrg-20 {
   margin: 20px 0;
 }
+
 .top-10 {
   margin-top: 10px;
 }
+
 .ops-btn {
   padding-left: 10px;
 }
@@ -593,12 +634,15 @@ export default {
 .small-gap {
   margin-right: 15px;
 }
+
 .car-box {
   background: #ffffff;
+
   .card-head {
     position: relative;
     padding: 20px 0;
     padding-left: 15px;
+
     &::before {
       position: absolute;
       content: '';
@@ -610,14 +654,17 @@ export default {
       border-radius: 8px;
     }
   }
+
   .card-extra {
     padding-bottom: 10px;
     padding-right: 15px;
+
     ::v-deep .el-select {
       width: 100%;
     }
   }
 }
+
 .cashier-body {
   margin: 10px;
 
@@ -653,19 +700,24 @@ export default {
       position: relative;
       flex: 1;
       overflow-y: auto;
-      padding: 0 8px 50px;
+      padding: 0 8px 20px;
       background-color: #f2f2f2;
+
       .bottom-bar {
         position: sticky;
-        bottom: -50px;
+        bottom: -20px;
         left: 0;
         width: 100%;
         height: 50px;
         line-height: 50px;
-        background:#ffffff;
-        box-shadow: 8px 8px 0 0 rgb(55 99 170 / 10%);
+        border: 2px solid #fff;
+        z-index: 99;
+        background-image: linear-gradient(180deg, #f3f5f8, #fff);
+        box-shadow: 20px 0 20px 0 rgb(55 99 170 / 10%), -8px -8px 20px 0 #fff;
+
         .state-ope {
           text-align: center;
+
           button {
             margin-right: 20px;
           }
@@ -682,6 +734,7 @@ export default {
     padding-left: 10px;
     cursor: pointer;
     transition: all .2s ease-in;
+
     .count_value {
       color: rgb(58, 142, 230);
     }
@@ -705,6 +758,7 @@ export default {
       line-height: 40px;
     }
   }
+
   .top-status-box {
     display: flex;
     height: 40px;
@@ -713,23 +767,28 @@ export default {
     background: #ffffff;
     padding: 0 10px;
     border: 2px solid #147AE3;
+
     .label {
       margin-right: 40px;
     }
+
     .left-amount-t {
       color: #F59A23;
     }
   }
 }
+
 .journal-table {
   margin-left: 20px;
 }
+
 .view-info {
   padding-left: 20px;
   cursor: pointer;
   color: #02A7F0;
+
   &.disabled {
-    cursor:no-drop;
+    cursor: no-drop;
     color: rgb(215, 215, 215);
   }
 }

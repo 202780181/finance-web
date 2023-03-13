@@ -21,16 +21,9 @@ export const asyncDevRouterMap = [  // 导出本地定义的路由树（非固�
 
 Vue.use(VueRouter)
 
-/**
- * frameIn：业务系统内置页面，但不会以左侧菜单的形式呈现，只会以 tag 的形式被打开
- */
-const frameIn = []
-const frameOut = []
-const tmpConstantRouterMap = [...frameIn, ...frameOut]   // 重新组织后导出
-
-export const frameInRoutes = frameIn   // 导出需要能以tags打开，但不要在左侧显示的菜单；
-export default new VueRouter({
+const router =  new VueRouter({
   scrollBehavior: () => ({y: 0}),
-  routes: tmpConstantRouterMap,
+  routes: asyncDevRouterMap,
   base: '/'  // 在nginx部署后，index 被放置在二级目录下，因此前端此处需要配置，此处/platform/只是示例
 })
+export default router
