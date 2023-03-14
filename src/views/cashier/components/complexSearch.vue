@@ -12,7 +12,7 @@
       custom-class="complex-model"
       :visible.sync="show"
       :close-on-click-modal="false"
-      width="60%">
+      :width="dialogWidth">
       <div class="complex-model-box">
         <div class="tab-btn">
           <el-button size="small" :class="{'checked': tabType === '1'}" @click="changeType('1')">待出纳复核</el-button>
@@ -206,6 +206,7 @@ export default {
   },
   data() {
     return {
+      dialogWidth: '60%',
       tabType: '1',
       searchForm: {
         startTime: '',
@@ -270,6 +271,11 @@ export default {
         address: '上海市普陀区金沙江路 1518 弄',
         zip: 200333
       }]
+    }
+  },
+  mounted() {
+    if(window.innerWidth < 1500) {
+      this.dialogWidth = '80%'
     }
   },
   methods: {

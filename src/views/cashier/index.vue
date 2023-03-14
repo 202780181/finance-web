@@ -121,36 +121,36 @@
                     <el-col :span="12">
                       <el-col :span="12">
                         <el-form-item label="付款方户名:">
-                          <el-input v-model="form.name"></el-input>
+                          <el-input v-model="form.name" disabled></el-input>
                         </el-form-item>
                       </el-col>
                       <el-col :span="12">
                         <el-form-item label="账号:">
-                          <el-input v-model="form.name"></el-input>
+                          <el-input v-model="form.name" disabled></el-input>
                         </el-form-item>
                       </el-col>
                     </el-col>
                     <el-col :span="10" :offset="2">
                       <el-form-item label="开户行:">
-                        <el-input v-model="form.name"></el-input>
+                        <el-input v-model="form.name" disabled></el-input>
                       </el-form-item>
                     </el-col>
                   </el-row>
                   <el-row>
                     <el-col :span="12">
-                      <el-form-item label="付款方户名:">
-                        <el-input v-model="form.name"></el-input>
+                      <el-form-item label="摘要:">
+                        <el-input v-model="form.name" disabled></el-input>
                       </el-form-item>
                     </el-col>
                     <el-col :span="10" :offset="2">
                       <el-col :span="12">
                         <el-form-item label="科目:">
-                          <el-input v-model="form.name"></el-input>
+                          <el-input v-model="form.name" disabled></el-input>
                         </el-form-item>
                       </el-col>
                       <el-col :span="12">
                         <el-form-item label="资金来源:">
-                          <el-input v-model="form.name"></el-input>
+                          <el-input v-model="form.name" disabled></el-input>
                         </el-form-item>
                       </el-col>
                     </el-col>
@@ -454,6 +454,7 @@ import elDragDialog from "@/directive/el-dragDialog";
 import aLoading from '@/directive/a-loading/index';
 import complexSearch from "@/views/cashier/components/complexSearch.vue";
 import {hiddenHeader} from '@/utils/common'
+import {statusMap} from './statusSourceMap'
 export default {
   name: "cashier",
   directives: {
@@ -517,6 +518,7 @@ export default {
         ]
       },
       receiptType: []
+
     }
   },
   components: {
@@ -532,7 +534,7 @@ export default {
     };
     setTimeout(()=> {
       this.loading = false
-    }, 5000)
+    }, 1000)
   },
   computed: {
     isAssociate() {
@@ -700,9 +702,9 @@ export default {
       position: relative;
       flex: 1;
       overflow-y: auto;
-      padding: 0 8px 20px;
+      padding: 5px 8px 20px;
       background-color: #f2f2f2;
-
+      transition: all .2s ease-in;
       .bottom-bar {
         position: sticky;
         bottom: -20px;
@@ -714,7 +716,7 @@ export default {
         z-index: 99;
         background-image: linear-gradient(180deg, #f3f5f8, #fff);
         box-shadow: 20px 0 20px 0 rgb(55 99 170 / 10%), -8px -8px 20px 0 #fff;
-
+        transition: all .2s ease-in;
         .state-ope {
           text-align: center;
 
@@ -767,7 +769,7 @@ export default {
     background: #ffffff;
     padding: 0 10px;
     border: 2px solid #147AE3;
-
+    transition: all .2s ease-in;
     .label {
       margin-right: 40px;
     }
