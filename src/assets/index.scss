@@ -4,3 +4,11 @@
 @import './styles/index.scss';
 // 引入本地主题样式
 @import './theme/index.scss';
+// 引入Tdesign
+@import './tdesign.min.scss';
+
+.cash-model {
+  .t-dialog--default {
+    padding: 22px;
+  }
+}

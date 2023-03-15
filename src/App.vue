@@ -2,7 +2,9 @@
   <div id="app">
     <component :is="layout" :customBoolean="customBoolean">
       <template v-slot:contentCustom v-if="customBoolean">
-        <cashier/>
+        <keep-alive>
+          <cashier/>
+        </keep-alive>
       </template>
     </component>
   </div>

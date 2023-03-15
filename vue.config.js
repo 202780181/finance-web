@@ -24,7 +24,8 @@ module.exports = {
     //     prependData: `@import "@/assets/index.scss";`
     //   }
     // }
-  }, devServer: {
+  },
+  devServer: {
     disableHostCheck: true,
     clientLogLevel: 'warning',
     historyApiFallback: true,
@@ -59,7 +60,11 @@ module.exports = {
           }, elementUI: {
             name: 'chunk-elementUI', // 单独将 elementUI 拆包
             test: /[\\/]node_modules[\\/]element-ui[\\/]/, priority: 20 // 权重要大于 libs 和 app 不然会被打包进 libs 或者 app
-          }, echarts: {
+          }, tdesign: {
+            name: 'chunk-tdesign',
+            test: /[\\/]node_modules[\\/]tdesign-vue[\\/]/, priority: 20 // 权重要大于 libs 和 app 不然会被打包进 libs 或者 app
+          },
+          echarts: {
             name: 'chunk-echarts', // 单独将 echarts 拆包
             test: /[\\/]node_modules[\\/]echarts[\\/]/, priority: 15 // 权重要大于 libs 和 app 不然会被打包进 libs 或者 app
           }, vueEcharts: {

@@ -12,7 +12,7 @@
           <el-col :span="4">
             <el-form-item label="凭证类型:">
               <el-select v-model="searchQuery.type">
-                <el-option :label="item.name" :value="item.value" v-for="item in receiptType"></el-option>
+                <el-option :label="item.name" :value="item.value" v-for="(item, key) in receiptType" :key="key"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -36,9 +36,9 @@
           </el-col>
           <el-col :span="4" class="">
             <el-button class="right-20" size="small" type="primary">查询</el-button>
-            <el-tooltip class="item" effect="dark" content='只能调出"无纸质附件"的单据' placement="top-start">
-              <el-button type="primary" size="small" class="left-20">下一单</el-button>
-            </el-tooltip>
+            <t-popup content='只能调出"无纸质附件"的单据'>
+              <el-button type="primary" size="small" class="left-20" @click="nextCashier">下一单</el-button>
+            </t-popup>
           </el-col>
         </el-row>
       </el-form>
@@ -47,402 +47,408 @@
         <el-button class="right-20" size="small" type="primary">附件查看</el-button>
         <el-button class="right-20" size="small" type="primary" @click="complexSearch">查询</el-button>
         <el-button class="right-20" size="small" type="primary">凭证查看</el-button>
-        <el-button class="right-20" size="small" type="primary">设置</el-button>
       </el-row>
     </div>
     <div id="J_2937333540" class="cashier-body">
-      <div class="summary-bar" ref="sumBar">
-        <el-row>
-          <el-col :xs="6" :sm="6" :md="8" :lg="10" :xl="7">
-            <div class="su-bar-flex">
-              <div>共: 10笔</div>
-              <span class="small-gap">;</span>
-              <div>待出纳: 1笔</div>
-              <span class="small-gap">;</span>
-              <div>出纳中: 2笔</div>
-              <span class="small-gap">;</span>
-              <div>出纳失败: 0笔</div>
+      <skeleton v-if="loading"></skeleton>
+      <template v-if="!loading">
+        <div class="summary-bar" ref="sumBar">
+          <el-row>
+            <el-col :xs="6" :sm="6" :md="8" :lg="10" :xl="7">
+              <div class="su-bar-flex">
+                <div>共: 10笔</div>
+                <span class="small-gap">;</span>
+                <div>待出纳: 1笔</div>
+                <span class="small-gap">;</span>
+                <div>出纳中: 2笔</div>
+                <span class="small-gap">;</span>
+                <div>出纳失败: 0笔</div>
+              </div>
+            </el-col>
+            <el-col :span="4">
+              <div>付款总额: 10,000.00</div>
+            </el-col>
+            <el-col :span="4">
+              <div>收款总额: 10,000.00</div>
+            </el-col>
+          </el-row>
+        </div>
+        <div class="cashier-content grid-wrapper">
+          <div class="left-grid" :style="{height: pageH + 'px'}">
+            <div class="wr-ls-list">
+              <div class="tag-item"
+                   :class="{'choose': selectedIndex === index}"
+                   v-for="(item, index) in items"
+                   :key="index"
+                   @click="selectedAction(item, index)"
+              >
+                <div class="widget-todo-item">
+                  <span class="label">状态：</span>
+                  <span class="count_value">出纳中,待打票</span>
+                </div>
+                <div class="widget-todo-item">
+                  <span class="label">金额：</span>
+                  <span class="teamix-status-tag">(付)</span>
+                  <span class="count_value">100.00</span>
+                </div>
+                <div class="widget-todo-item">
+                  <span class="label">科目：</span>
+                  <span class="count_value">102001</span>
+                </div>
+              </div>
             </div>
-          </el-col>
-          <el-col :span="4">
-            <div>付款总额: 10,000.00</div>
-          </el-col>
-          <el-col :span="4">
-            <div>收款总额: 10,000.00</div>
-          </el-col>
-        </el-row>
-      </div>
-      <div class="cashier-content grid-wrapper">
-        <div class="left-grid" :style="{height: pageH + 'px'}">
-          <div class="wr-ls-list">
-            <div class="tag-item"
-                 :class="{'choose': selectedIndex === index}"
-                 v-for="(item, index) in items"
-                 :key="index"
-                 @click="selectedAction(item, index)"
-            >
-              <div class="widget-todo-item">
-                <span class="label">状态：</span>
-                <span class="count_value">出纳中,待打票</span>
+          </div>
+          <div class="right-grid" :class="{'empty-grid': !cashierItem.length}" :style="{height: pageH + 'px'}">
+            <empty description="暂无出纳信息" v-if="false"></empty>
+            <div>
+              <div class="top-status-box">
+                <div class="label left-box-s">
+                  <div class="left">
+                    <span>状态：</span>
+                    <span>{{ getStripStatus() }}</span>
+                  </div>
+                </div>
+                <div class="label left-amount-t">
+                  <span>支付状态:</span>
+                  <span>{{getCashierItemOrType}}</span>
+                  <span>¥10,000.00</span>
+                </div>
               </div>
-              <div class="widget-todo-item">
-                <span class="label">金额：</span>
-                <span class="teamix-status-tag">(付)</span>
-                <span class="count_value">100.00</span>
+              <div class="content-box">
+                <el-form ref="form" label-position="right" :model="form" label-width="105px">
+                  <div class="car-box top-10">
+                    <div class="card-head">
+                      <span class="card-title">付款信息</span>
+                    </div>
+                    <div class="card-extra">
+                      <el-row>
+                        <el-col :span="12">
+                          <el-col :span="12">
+                            <el-form-item label="付款方户名:">
+                              <el-input v-model="form.name" disabled></el-input>
+                            </el-form-item>
+                          </el-col>
+                          <el-col :span="12">
+                            <el-form-item label="账号:">
+                              <el-input v-model="form.name" disabled></el-input>
+                            </el-form-item>
+                          </el-col>
+                        </el-col>
+                        <el-col :span="10" :offset="2">
+                          <el-form-item label="开户行:">
+                            <el-input v-model="form.name" disabled></el-input>
+                          </el-form-item>
+                        </el-col>
+                      </el-row>
+                      <el-row>
+                        <el-col :span="12">
+                          <el-form-item label="摘要:">
+                            <el-input v-model="form.name" disabled></el-input>
+                          </el-form-item>
+                        </el-col>
+                        <el-col :span="10" :offset="2">
+                          <el-col :span="12">
+                            <el-form-item label="科目:">
+                              <el-input v-model="form.name" disabled></el-input>
+                            </el-form-item>
+                          </el-col>
+                          <el-col :span="12">
+                            <el-form-item label="资金来源:">
+                              <el-input v-model="form.name" disabled></el-input>
+                            </el-form-item>
+                          </el-col>
+                        </el-col>
+                      </el-row>
+                    </div>
+                  </div>
+                  <div class="car-box top-10">
+                    <div class="card-head">
+                      <span class="card-title">出纳信息</span>
+                    </div>
+                    <div class="card-extra">
+                      <el-row>
+                        <el-col :span="12">
+                          <el-form-item label="用途:">
+                            <el-input v-model="form.name"></el-input>
+                          </el-form-item>
+                        </el-col>
+                        <el-col :span="10" :offset="2">
+                          <el-col :span="12">
+                            <el-form-item label="结算方式:">
+                              <el-select :value="form.payMent">
+                                <el-option label="区域一" value="shanghai"></el-option>
+                                <el-option label="区域二" value="beijing"></el-option>
+                              </el-select>
+                            </el-form-item>
+                          </el-col>
+                          <el-col :span="12">
+                            <el-form-item label="出纳日期:">
+                              <el-select :value="form.time">
+                                <el-option label="区域一" value="shanghai"></el-option>
+                                <el-option label="区域二" value="beijing"></el-option>
+                              </el-select>
+                            </el-form-item>
+                          </el-col>
+                        </el-col>
+                      </el-row>
+                      <el-row>
+                        <el-col :span="12">
+                          <el-col :span="12">
+                            <el-form-item label="类型:">
+                              <el-input v-model="form.name"></el-input>
+                            </el-form-item>
+                          </el-col>
+                          <el-col :span="12">
+                            <el-form-item label="结算单号:">
+                              <el-input v-model="form.name"></el-input>
+                            </el-form-item>
+                          </el-col>
+                        </el-col>
+                        <el-col :span="10" :offset="2">
+                          <el-col :span="4">
+                            <el-form-item label-width="0">
+                              <el-checkbox v-model="form.associate">关联预开</el-checkbox>
+                            </el-form-item>
+                          </el-col>
+                          <el-col :span="8">
+                            <el-select :value="form.associateValue" placeholder="请选择活动区域">
+                              <el-option label="区域一" value="shanghai"></el-option>
+                              <el-option label="区域二" value="beijing"></el-option>
+                            </el-select>
+                          </el-col>
+                          <el-col :span="10">
+                            <div class="view-info" :class="{'disabled': isAssociate}">查看信息</div>
+                          </el-col>
+                        </el-col>
+                      </el-row>
+                    </div>
+                  </div>
+                  <div class="car-box top-10">
+                    <div class="card-head">
+                      <span class="card-title">首款单位</span>
+                    </div>
+                    <div class="card-extra">
+                      <el-row>
+                        <el-col :span="12">
+                          <el-form-item label="对方账户:">
+                            <el-input v-model="form.name"></el-input>
+                          </el-form-item>
+                        </el-col>
+                        <el-col :span="10" :offset="2">
+                          <el-form-item label="所属银行:">
+                            <el-input v-model="form.name"></el-input>
+                          </el-form-item>
+                        </el-col>
+                      </el-row>
+                      <el-row>
+                        <el-col :span="12">
+                          <el-form-item label="银行账户:">
+                            <el-input v-model="form.name"></el-input>
+                          </el-form-item>
+                        </el-col>
+                        <el-col :span="10" :offset="2">
+                          <el-form-item label="开户行:">
+                            <el-input v-model="form.name"></el-input>
+                          </el-form-item>
+                        </el-col>
+                      </el-row>
+                    </div>
+                  </div>
+                  <div class="car-box top-10">
+                    <div class="card-head">
+                      <span class="card-title">国库信息</span>
+                    </div>
+                    <div class="card-extra">
+                      <el-row>
+                        <el-col :span="12">
+                          <el-col :span="12">
+                            <el-form-item label="预算类型:">
+                              <el-select :value="form.budgetType">
+                                <el-option label="区域一" value="shanghai"></el-option>
+                                <el-option label="区域二" value="beijing"></el-option>
+                              </el-select>
+                            </el-form-item>
+                          </el-col>
+                          <el-col :span="12">
+                            <el-form-item label="功能分类:">
+                              <el-select :value="form.fClass">
+                                <el-option label="区域一" value="shanghai"></el-option>
+                                <el-option label="区域二" value="beijing"></el-option>
+                              </el-select>
+                            </el-form-item>
+                          </el-col>
+                        </el-col>
+                        <el-col :span="10" :offset="2">
+                          <el-form-item label="国库经济分类:">
+                            <el-input v-model="form.economy"></el-input>
+                          </el-form-item>
+                        </el-col>
+                      </el-row>
+                      <el-row>
+                        <el-col :span="12">
+                          <el-col :span="12">
+                            <el-form-item label="支出类型:">
+                              <el-select :value="form.outlay">
+                                <el-option label="区域一" value="shanghai"></el-option>
+                                <el-option label="区域二" value="beijing"></el-option>
+                              </el-select>
+                            </el-form-item>
+                          </el-col>
+                          <el-col :span="12">
+                            <el-form-item label="预算来源:">
+                              <el-select :value="form.sfBudget">
+                                <el-option label="区域一" value="shanghai"></el-option>
+                                <el-option label="区域二" value="beijing"></el-option>
+                              </el-select>
+                            </el-form-item>
+                          </el-col>
+                        </el-col>
+                        <el-col :span="10" :offset="2">
+                          <el-form-item label="预算关联号:">
+                            <el-select :value="form.budgetLinkedNo">
+                              <el-option label="区域一" value="shanghai"></el-option>
+                              <el-option label="区域二" value="beijing"></el-option>
+                            </el-select>
+                          </el-form-item>
+                        </el-col>
+                      </el-row>
+                    </div>
+                  </div>
+                  <div class="car-box top-10">
+                    <div class="card-head">
+                      <span class="card-title">其他</span>
+                    </div>
+                    <div class="card-extra">
+                      <el-row>
+                        <el-col :span="12">
+                          <el-form-item label="审批说明:">
+                            <el-input v-model="form.economy"></el-input>
+                          </el-form-item>
+                        </el-col>
+                        <el-col :span="10" :offset="2">
+                          <el-col :span="3">
+                            <el-form-item label-width="0">
+                              <el-checkbox v-model="form.short">短信通知</el-checkbox>
+                            </el-form-item>
+                          </el-col>
+                          <el-col :span="9" :offset="1">
+                            <el-form-item label-width="0">
+                              <el-input v-model="form.host" placeholder="请输入">接收人</el-input>
+                            </el-form-item>
+                          </el-col>
+                          <el-col :span="9" :offset="2">
+                            <el-form-item label-width="0">
+                              <el-input v-model="form.phone" placeholder="请输入">号码</el-input>
+                            </el-form-item>
+                          </el-col>
+                        </el-col>
+                      </el-row>
+                    </div>
+                  </div>
+                  <div class="car-box top-10">
+                    <div class="card-head">
+                      <span class="card-title">出纳日志</span>
+                    </div>
+                    <div class="card-extra">
+                      <el-table
+                        class="journal-table"
+                        height="300px"
+                        :data="form.journalData"
+                        style="width: 97%">
+                        <el-table-column
+                          prop="date"
+                          label="日期"
+                          width="180">
+                        </el-table-column>
+                        <el-table-column
+                          prop="name"
+                          label="操作人"
+                          width="180">
+                        </el-table-column>
+                        <el-table-column
+                          prop="detail"
+                          label="详情">
+                        </el-table-column>
+                      </el-table>
+                    </div>
+                  </div>
+                </el-form>
               </div>
-              <div class="widget-todo-item">
-                <span class="label">科目：</span>
-                <span class="count_value">102001</span>
+              <div class="bottom-bar">
+                <div class="state-ope in-writ-print" v-if="false">
+                  <el-button type="primary" size="small">打印票据</el-button>
+                  <el-button type="primary" size="small">搁置</el-button>
+                  <el-button size="small">取消出纳</el-button>
+                  <el-dropdown>
+                    <el-button type="primary">
+                      打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
+                    </el-button>
+                    <el-dropdown-menu slot="dropdown">
+                      <el-dropdown-item>打印确认单</el-dropdown-item>
+                      <el-dropdown-item>打印回单</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </el-dropdown>
+                </div>
+                <div class="state-ope" v-if="false">
+                  <el-button type="primary" size="small">出纳复核</el-button>
+                </div>
+                <!-- 状态: 待确认、带出纳(现金)  -->
+                <div class="state-ope" v-if="true">
+                  <el-button type="primary" size="small">关联搁置</el-button>
+                  <el-dropdown>
+                    <el-button type="primary">
+                      打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
+                    </el-button>
+                    <el-dropdown-menu>
+                      <el-dropdown-item>打印确认单</el-dropdown-item>
+                      <el-dropdown-item>打印回单</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </el-dropdown>
+                </div>
+                <div class="state-ope" v-if="false">
+                  <el-button type="primary" size="small">搁置</el-button>
+                  <el-dropdown>
+                    <el-button type="primary">
+                      打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
+                    </el-button>
+                    <el-dropdown-menu>
+                      <el-dropdown-item>打印确认单</el-dropdown-item>
+                      <el-dropdown-item>打印回单</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </el-dropdown>
+                </div>
+                <div class="state-ope" v-if="false">
+                  <el-button type="primary" size="small">搁置</el-button>
+                  <el-button size="small">取消出纳</el-button>
+                  <el-dropdown>
+                    <el-button type="primary">
+                      打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
+                    </el-button>
+                    <el-dropdown-menu>
+                      <el-dropdown-item>打印确认单</el-dropdown-item>
+                      <el-dropdown-item>打印回单</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </el-dropdown>
+                  <el-button size="small">票据</el-button>
+                </div>
+                <div class="state-ope" v-if="false">
+                  <el-button type="primary" size="small">搁置</el-button>
+                  <el-button size="small">取消出纳</el-button>
+                  <el-dropdown>
+                    <el-button type="primary">
+                      打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
+                    </el-button>
+                    <el-dropdown-menu>
+                      <el-dropdown-item>打印确认单</el-dropdown-item>
+                      <el-dropdown-item>打印回单</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </el-dropdown>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="right-grid" :style="{height: pageH + 'px'}"  v-a-loading="loading">
-          <div class="top-status-box">
-            <div class="label left-box-s">
-              <div class="left">
-                <span>状态：</span>
-                <span>{{ getStripStatus() }}</span>
-              </div>
-            </div>
-            <div class="label left-amount-t">
-              <span>付款:</span>
-              <span>¥10,000.00</span>
-            </div>
-          </div>
-          <div class="content-box">
-            <el-form ref="form" label-position="right" :model="form" label-width="105px">
-              <div class="car-box top-10">
-                <div class="card-head">
-                  <span class="card-title">付款信息</span>
-                </div>
-                <div class="card-extra">
-                  <el-row>
-                    <el-col :span="12">
-                      <el-col :span="12">
-                        <el-form-item label="付款方户名:">
-                          <el-input v-model="form.name" disabled></el-input>
-                        </el-form-item>
-                      </el-col>
-                      <el-col :span="12">
-                        <el-form-item label="账号:">
-                          <el-input v-model="form.name" disabled></el-input>
-                        </el-form-item>
-                      </el-col>
-                    </el-col>
-                    <el-col :span="10" :offset="2">
-                      <el-form-item label="开户行:">
-                        <el-input v-model="form.name" disabled></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="12">
-                      <el-form-item label="摘要:">
-                        <el-input v-model="form.name" disabled></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="10" :offset="2">
-                      <el-col :span="12">
-                        <el-form-item label="科目:">
-                          <el-input v-model="form.name" disabled></el-input>
-                        </el-form-item>
-                      </el-col>
-                      <el-col :span="12">
-                        <el-form-item label="资金来源:">
-                          <el-input v-model="form.name" disabled></el-input>
-                        </el-form-item>
-                      </el-col>
-                    </el-col>
-                  </el-row>
-                </div>
-              </div>
-              <div class="car-box top-10">
-                <div class="card-head">
-                  <span class="card-title">出纳信息</span>
-                </div>
-                <div class="card-extra">
-                  <el-row>
-                    <el-col :span="12">
-                      <el-form-item label="用途:">
-                        <el-input v-model="form.name"></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="10" :offset="2">
-                      <el-col :span="12">
-                        <el-form-item label="结算方式:">
-                          <el-select :value="form.payMent">
-                            <el-option label="区域一" value="shanghai"></el-option>
-                            <el-option label="区域二" value="beijing"></el-option>
-                          </el-select>
-                        </el-form-item>
-                      </el-col>
-                      <el-col :span="12">
-                        <el-form-item label="出纳日期:">
-                          <el-select :value="form.time">
-                            <el-option label="区域一" value="shanghai"></el-option>
-                            <el-option label="区域二" value="beijing"></el-option>
-                          </el-select>
-                        </el-form-item>
-                      </el-col>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="12">
-                      <el-col :span="12">
-                        <el-form-item label="类型:">
-                          <el-input v-model="form.name"></el-input>
-                        </el-form-item>
-                      </el-col>
-                      <el-col :span="12">
-                        <el-form-item label="结算单号:">
-                          <el-input v-model="form.name"></el-input>
-                        </el-form-item>
-                      </el-col>
-                    </el-col>
-                    <el-col :span="10" :offset="2">
-                      <el-col :span="4">
-                        <el-form-item label-width="0">
-                          <el-checkbox v-model="form.associate">关联预开</el-checkbox>
-                        </el-form-item>
-                      </el-col>
-                      <el-col :span="8">
-                        <el-select :value="form.associateValue" placeholder="请选择活动区域">
-                          <el-option label="区域一" value="shanghai"></el-option>
-                          <el-option label="区域二" value="beijing"></el-option>
-                        </el-select>
-                      </el-col>
-                      <el-col :span="10">
-                        <div class="view-info" :class="{'disabled': isAssociate}">查看信息</div>
-                      </el-col>
-                    </el-col>
-                  </el-row>
-                </div>
-              </div>
-              <div class="car-box top-10">
-                <div class="card-head">
-                  <span class="card-title">首款单位</span>
-                </div>
-                <div class="card-extra">
-                  <el-row>
-                    <el-col :span="12">
-                      <el-form-item label="对方账户:">
-                        <el-input v-model="form.name"></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="10" :offset="2">
-                      <el-form-item label="所属银行:">
-                        <el-input v-model="form.name"></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="12">
-                      <el-form-item label="银行账户:">
-                        <el-input v-model="form.name"></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="10" :offset="2">
-                      <el-form-item label="开户行:">
-                        <el-input v-model="form.name"></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                </div>
-              </div>
-              <div class="car-box top-10">
-                <div class="card-head">
-                  <span class="card-title">国库信息</span>
-                </div>
-                <div class="card-extra">
-                  <el-row>
-                    <el-col :span="12">
-                      <el-col :span="12">
-                        <el-form-item label="预算类型:">
-                          <el-select :value="form.budgetType">
-                            <el-option label="区域一" value="shanghai"></el-option>
-                            <el-option label="区域二" value="beijing"></el-option>
-                          </el-select>
-                        </el-form-item>
-                      </el-col>
-                      <el-col :span="12">
-                        <el-form-item label="功能分类:">
-                          <el-select :value="form.fClass">
-                            <el-option label="区域一" value="shanghai"></el-option>
-                            <el-option label="区域二" value="beijing"></el-option>
-                          </el-select>
-                        </el-form-item>
-                      </el-col>
-                    </el-col>
-                    <el-col :span="10" :offset="2">
-                      <el-form-item label="国库经济分类:">
-                        <el-input v-model="form.economy"></el-input>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                  <el-row>
-                    <el-col :span="12">
-                      <el-col :span="12">
-                        <el-form-item label="支出类型:">
-                          <el-select :value="form.outlay">
-                            <el-option label="区域一" value="shanghai"></el-option>
-                            <el-option label="区域二" value="beijing"></el-option>
-                          </el-select>
-                        </el-form-item>
-                      </el-col>
-                      <el-col :span="12">
-                        <el-form-item label="预算来源:">
-                          <el-select :value="form.sfBudget">
-                            <el-option label="区域一" value="shanghai"></el-option>
-                            <el-option label="区域二" value="beijing"></el-option>
-                          </el-select>
-                        </el-form-item>
-                      </el-col>
-                    </el-col>
-                    <el-col :span="10" :offset="2">
-                      <el-form-item label="预算关联号:">
-                        <el-select :value="form.budgetLinkedNo">
-                          <el-option label="区域一" value="shanghai"></el-option>
-                          <el-option label="区域二" value="beijing"></el-option>
-                        </el-select>
-                      </el-form-item>
-                    </el-col>
-                  </el-row>
-                </div>
-              </div>
-              <div class="car-box top-10">
-                <div class="card-head">
-                  <span class="card-title">其他</span>
-                </div>
-                <div class="card-extra">
-                  <el-row>
-                    <el-col :span="12">
-                      <el-form-item label="审批说明:">
-                        <el-input v-model="form.economy"></el-input>
-                      </el-form-item>
-                    </el-col>
-                    <el-col :span="10" :offset="2">
-                      <el-col :span="3">
-                        <el-form-item label-width="0">
-                          <el-checkbox v-model="form.short">短信通知</el-checkbox>
-                        </el-form-item>
-                      </el-col>
-                      <el-col :span="9" :offset="1">
-                        <el-form-item label-width="0">
-                          <el-input v-model="form.host" placeholder="请输入">接收人</el-input>
-                        </el-form-item>
-                      </el-col>
-                      <el-col :span="9" :offset="2">
-                        <el-form-item label-width="0">
-                          <el-input v-model="form.phone" placeholder="请输入">号码</el-input>
-                        </el-form-item>
-                      </el-col>
-                    </el-col>
-                  </el-row>
-                </div>
-              </div>
-              <div class="car-box top-10">
-                <div class="card-head">
-                  <span class="card-title">出纳日志</span>
-                </div>
-                <div class="card-extra">
-                  <el-table
-                    class="journal-table"
-                    height="300px"
-                    :data="form.journalData"
-                    style="width: 97%">
-                    <el-table-column
-                      prop="date"
-                      label="日期"
-                      width="180">
-                    </el-table-column>
-                    <el-table-column
-                      prop="name"
-                      label="操作人"
-                      width="180">
-                    </el-table-column>
-                    <el-table-column
-                      prop="detail"
-                      label="详情">
-                    </el-table-column>
-                  </el-table>
-                </div>
-              </div>
-            </el-form>
-          </div>
-          <div class="bottom-bar">
-            <div class="state-ope in-writ-print" v-if="false">
-              <el-button type="primary" size="small">打印票据</el-button>
-              <el-button type="primary" size="small">搁置</el-button>
-              <el-button size="small">取消出纳</el-button>
-              <el-dropdown>
-                <el-button type="primary">
-                  打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
-                </el-button>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item>打印确认单</el-dropdown-item>
-                  <el-dropdown-item>打印回单</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-            </div>
-            <div class="state-ope" v-if="false">
-              <el-button type="primary" size="small">出纳复核</el-button>
-            </div>
-            <!-- 状态: 待确认、带出纳(现金)  -->
-            <div class="state-ope" v-if="true">
-              <el-button type="primary" size="small">关联搁置</el-button>
-              <el-dropdown>
-                <el-button type="primary">
-                  打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
-                </el-button>
-                <el-dropdown-menu>
-                  <el-dropdown-item>打印确认单</el-dropdown-item>
-                  <el-dropdown-item>打印回单</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-            </div>
-            <div class="state-ope" v-if="false">
-              <el-button type="primary" size="small">搁置</el-button>
-              <el-dropdown>
-                <el-button type="primary">
-                  打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
-                </el-button>
-                <el-dropdown-menu>
-                  <el-dropdown-item>打印确认单</el-dropdown-item>
-                  <el-dropdown-item>打印回单</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-            </div>
-            <div class="state-ope" v-if="false">
-              <el-button type="primary" size="small">搁置</el-button>
-              <el-button size="small">取消出纳</el-button>
-              <el-dropdown>
-                <el-button type="primary">
-                  打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
-                </el-button>
-                <el-dropdown-menu>
-                  <el-dropdown-item>打印确认单</el-dropdown-item>
-                  <el-dropdown-item>打印回单</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-              <el-button size="small">票据</el-button>
-            </div>
-            <div class="state-ope" v-if="false">
-              <el-button type="primary" size="small">搁置</el-button>
-              <el-button size="small">取消出纳</el-button>
-              <el-dropdown>
-                <el-button type="primary">
-                  打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
-                </el-button>
-                <el-dropdown-menu>
-                  <el-dropdown-item>打印确认单</el-dropdown-item>
-                  <el-dropdown-item>打印回单</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-            </div>
-          </div>
-        </div>
-      </div>
+      </template>
     </div>
     <!-- 复杂查询条件 -->
     <complex-search :show="complexShow" @close="complexCloseAction"/>
@@ -454,6 +460,9 @@ import elDragDialog from "@/directive/el-dragDialog";
 import aLoading from '@/directive/a-loading/index';
 import complexSearch from "@/views/cashier/components/complexSearch.vue";
 import {hiddenHeader} from '@/utils/common'
+import skeleton from './skeleton.vue'
+import Empty from '@/components/empty'
+import { DialogPlugin } from 'tdesign-vue';
 import {statusMap} from './statusSourceMap'
 export default {
   name: "cashier",
@@ -476,6 +485,11 @@ export default {
         {}, {}, {}, {}, {},
         {}, {}, {}, {}, {},
       ],
+      // 选中的出纳单
+      cashierItem: [
+        {}
+      ],
+      // 查询参数
       searchQuery: {
         type: '',
         time: '',
@@ -522,6 +536,8 @@ export default {
     }
   },
   components: {
+    Empty,
+    skeleton,
     complexSearch
   },
   mounted() {
@@ -539,6 +555,10 @@ export default {
   computed: {
     isAssociate() {
       return !this.form.associate
+    },
+    // 收付类型 状态
+    getCashierItemOrType() {
+      return '（付）'
     }
   },
   methods: {
@@ -564,6 +584,24 @@ export default {
     },
     complexCloseAction() {
       this.complexShow = false
+    },
+    nextCashier() {
+      const confirmDia = DialogPlugin.alert({
+        header: '单据已处理完成',
+        closeBtn: false,
+        className: 'cash-model',
+        closeOnOverlayClick: false,
+        body: '无纸质附件单据已全部出纳确认完成！',
+        confirmBtn: {
+          content: '知道了',
+          variant: 'base',
+        },
+        onConfirm: ({ e }) => {
+          console.log('confirm button has been clicked!');
+          console.log('e: ', e);
+          confirmDia.hide();
+        }
+      });
     },
     goCashiers() {
       this.$router.push({
@@ -705,6 +743,11 @@ export default {
       padding: 5px 8px 20px;
       background-color: #f2f2f2;
       transition: all .2s ease-in;
+      &.empty-grid {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
       .bottom-bar {
         position: sticky;
         bottom: -20px;

@@ -25,14 +25,16 @@
               <el-row>
                 <el-col :span="12">
                   <el-form-item label="活动时间">
-                    <el-col :span="11">
-                      <el-date-picker type="date" placeholder="选择日期" v-model="searchForm.startTime"
-                                      style="width: 100%;"></el-date-picker>
-                    </el-col>
-                    <el-col class="line" :span="1">至</el-col>
-                    <el-col :span="11">
-                      <el-time-picker placeholder="选择时间" v-model="searchForm.endTime"
-                                      style="width: 100%;"></el-time-picker>
+                    <el-col :span="23">
+                      <el-date-picker
+                        style="width: 100%"
+                        v-model="searchForm.startTime"
+                        type="daterange"
+                        range-separator="至"
+                        start-placeholder="开始日期"
+                        end-placeholder="结束日期"
+                        align="right">
+                      </el-date-picker>
                     </el-col>
                   </el-form-item>
                 </el-col>

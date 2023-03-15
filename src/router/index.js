@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-
+import PersonalProjectQuery from './dev-modules/PersonalProjectQuery'
 // 解决Vue-Router升级导致的Uncaught(in promise) navigation guard问题
 const originalPush = VueRouter.prototype.push
 VueRouter.prototype.push = function push(location, onResolve, onReject) {
@@ -16,7 +16,8 @@ VueRouter.prototype.push = function push(location, onResolve, onReject) {
 import CashierManage from "@/router/dev-modules/cashierManage"
 
 export const asyncDevRouterMap = [  // 导出本地定义的路由树（非固定路由）
-  ...CashierManage
+  ...CashierManage,
+  PersonalProjectQuery
 ]
 
 Vue.use(VueRouter)

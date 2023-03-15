@@ -4,6 +4,8 @@ import router from './router'
 import store from './store'
 import '@/defines' //  引入 defines
 import Print from 'vue-print-nb';
+import TDesign from 'tdesign-vue';
+Vue.use(TDesign);
 Vue.use(Print);
 Vue.config.productionTip = false
 new Vue({
