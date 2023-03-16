@@ -15,9 +15,9 @@
       :width="dialogWidth">
       <div class="complex-model-box">
         <div class="tab-btn">
-          <el-button size="small" :class="{'checked': tabType === '1'}" @click="changeType('1')">待出纳复核</el-button>
-          <el-button size="small" :class="{'checked': tabType === '2'}" @click="changeType('2')">待支付</el-button>
-          <el-button size="small" :class="{'checked': tabType === '3'}" @click="changeType('3')">更多查询</el-button>
+          <el-button size="mini" :class="{'checked': tabType === '1'}" @click="changeType('1')">待出纳复核</el-button>
+          <el-button size="mini" :class="{'checked': tabType === '2'}" @click="changeType('2')">待支付</el-button>
+          <el-button size="mini" :class="{'checked': tabType === '3'}" @click="changeType('3')">更多查询</el-button>
         </div>
         <div class="search-form">
           <el-form ref="form" :model="searchForm" label-width="80px">
@@ -111,7 +111,7 @@
                   </el-col>
                   <el-col :span="3" :offset="8">
                     <el-form-item label-width="0">
-                      <el-button size="small" type="primary">查询</el-button>
+                      <el-button size="mini" type="primary">查询</el-button>
                     </el-form-item>
                   </el-col>
                 </el-col>
@@ -127,7 +127,7 @@
                     <el-input v-model="searchForm.keywords" placeholder="凭证号、摘要、金额"></el-input>
                   </el-form-item>
                   <el-form-item label-width="0">
-                    <el-button type="primary" size="small" class="le-c-st">查询</el-button>
+                    <el-button type="primary" size="mini" class="le-c-st">查询</el-button>
                   </el-form-item>
                 </el-col>
               </el-row>
@@ -139,7 +139,7 @@
                     <el-input v-model="searchForm.keywords" placeholder="凭证号、摘要、金额"></el-input>
                   </el-form-item>
                   <el-form-item label-width="0">
-                    <el-button type="primary" size="small" class="le-c-st">查询</el-button>
+                    <el-button type="primary" size="mini" class="le-c-st">查询</el-button>
                   </el-form-item>
                 </el-col>
               </el-row>

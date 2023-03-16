@@ -35,18 +35,18 @@
             <el-checkbox v-model="searchQuery.paper">无纸质凭证</el-checkbox>
           </el-col>
           <el-col :span="4" class="">
-            <el-button class="right-20" size="small" type="primary">查询</el-button>
+            <el-button class="right-20" size="mini" type="primary">查询</el-button>
             <t-popup content='只能调出"无纸质附件"的单据'>
-              <el-button type="primary" size="small" class="left-20" @click="nextCashier">下一单</el-button>
+              <el-button type="primary" size="mini" class="left-20" @click="nextCashier">下一单</el-button>
             </t-popup>
           </el-col>
         </el-row>
       </el-form>
       <el-row type="flex" class="ops-btn">
-        <el-button class="right-20" size="small" type="primary" @click="goCashiers">批量出纳</el-button>
-        <el-button class="right-20" size="small" type="primary">附件查看</el-button>
-        <el-button class="right-20" size="small" type="primary" @click="complexSearch">查询</el-button>
-        <el-button class="right-20" size="small" type="primary">凭证查看</el-button>
+        <el-button class="right-20" size="mini" type="primary" @click="goCashiers">批量出纳</el-button>
+        <el-button class="right-20" size="mini" type="primary">附件查看</el-button>
+        <el-button class="right-20" size="mini" type="primary" @click="complexSearch">查询</el-button>
+        <el-button class="right-20" size="mini" type="primary">凭证查看</el-button>
       </el-row>
     </div>
     <div id="J_2937333540" class="cashier-body">
@@ -376,11 +376,11 @@
               </div>
               <div class="bottom-bar">
                 <div class="state-ope in-writ-print" v-if="false">
-                  <el-button type="primary" size="small">打印票据</el-button>
-                  <el-button type="primary" size="small">搁置</el-button>
-                  <el-button size="small">取消出纳</el-button>
+                  <el-button type="primary" size="mini">打印票据</el-button>
+                  <el-button type="primary" size="mini">搁置</el-button>
+                  <el-button size="mini">取消出纳</el-button>
                   <el-dropdown>
-                    <el-button type="primary">
+                    <el-button type="primary" size="mini">
                       打印确认单<i class="el-icon-arrow-down el-icon--right"></i>
                     </el-button>
                     <el-dropdown-menu slot="dropdown">
@@ -587,6 +587,8 @@ export default {
     },
     nextCashier() {
       const confirmDia = DialogPlugin.alert({
+        attach: 'body',
+        theme: 'default',
         header: '单据已处理完成',
         closeBtn: false,
         className: 'cash-model',
